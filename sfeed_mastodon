@@ -8,6 +8,38 @@
 # Auth: @jadedctrl@jam.xwx.moe
 #―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 
+# Print a friendly usage message.
+usage() {
+	echo "usage: $(basename $0) [-h] [-a FEDI_AUTH] SERVER_URL"
+	echo "Posts sfeed(1) feed data from stdin to Mastodon-compatible servers."
+	echo ""
+	echo "  -h             print this message and exit"
+	echo "  -a             the authorization token for your account; see below"
+	echo "  -t             template for post contents; see below"
+	echo ""
+	echo "To find your authorization token, you can snoop through request headers in"
+	echo "your web-browser. In Firefox, this can be done through:"
+	echo '    Developer Tools (F12) → Network → Headers'
+	echo 'Look for your $FEDI_AUTH value in the Authorization header like so:'
+	echo '    Authorization: Bearer $FEDI_AUTH'
+	echo 'Either place this value in your $FEDI_AUTH environment variable, or pass it'
+	echo "with -a."
+	echo ""
+	echo "The template (-t) is an HTML value for this script’s post format."
+	echo "Post-related variables go within {{double-braces}}, and the following"
+	echo "variables are recognized: title, url, desc, desc_short, unix_date."
+	echo "By default, the template used is:"
+	echo "    <b>{{title}}</b><br>{{url}}<br><br><blockquote>{{desc_short}}</blockquote>"
+}
+
+
+# Deescape a URL-escaped string (percent-encoded), passed over stdin.
+url_deescape() {
+	sed 's@+@ @g;s@%@\\x@g' \
+		| xargs -0 printf "%b"
+}
+
+
 # Takes a post’s contents and create the corresponding client-API JSON.
 post_json() {
 	local message_text="$1"
@@ -30,21 +62,8 @@ post_status() {
 }
 
 
-usage() {
-	echo "usage: $(basename "$0") server_url" 1>&2
-	echo "" 1>&2
-	echo "Your authorization key must be borrowed from your web-browser and" 1>&2
-	echo 'placed in the $FEDI_AUTH environment variable.' 1>&2
-	exit 2
-}
-
-
-url_deescape() {
-	sed 's@+@ @g;s@%@\\x@g' \
-		| xargs -0 printf "%b"
-}
-
-
+# Print an sfeed post line as per $TEMPLATE, with the following variables:
+# {{title}}, {{unix_date}}, {{url}}, {{desc}}, {{desc_short}}
 sfeed_post_text() {
 	local sfeed_line="$1"
 	local unix_date="$(echo "$line" | awk --field-separator '\t' '{print $1}')"
@@ -63,6 +82,7 @@ sfeed_post_text() {
 }
 
 
+# Post an sfeed feed entry, by line, to a Mastodon-compatible fedi server.
 post_sfeed_line() {
 	local server="$1"
 	local auth="$2"
@@ -72,25 +92,46 @@ post_sfeed_line() {
 }
 
 
-if test -z "$FEDI_AUTH"; then
-	echo 'You need to set the environment variable $FEDI_AUTH!' 1>&2
-	echo 'You can find your auth key by examining the "Authentication: Bearer" header' 1>&2
-	echo "used in requests by your server's web-client." 1>&2
-    echo 'In Firefox, F12→Network.' 1>&2
-	echo "" 1>&2
-	usage
-fi
-
 TEMPLATE='<b>{{title}}</b><br>{{url}}<br><br><blockquote>{{desc_short}}</blockquote>'
+while getopts 'ha:t:' arg; do
+	case $arg in
+		h)
+			usage
+			exit 0
+			;;
+		a)
+			FEDI_AUTH="$OPTARG"
+			;;
+		t)
+			TEMPLATE="$OPTARG"
+			;;
+	esac
+done
 
+shift $((OPTIND-1))
 SERVER_URL="$1"
-if test -z "$SERVER_URL" -o "$1" = "-h" -o "$1" = "--help"; then
-	usage
+
+
+if test -z "$FEDI_AUTH"; then
+	1>&2 echo 'You need to set the environment variable $FEDI_AUTH!'
+	1>&2 echo 'You can find your auth key by examining the "Authentication: Bearer" header'
+	1>&2 echo "used in requests by your server's web-client."
+    1>&2 echo 'In Firefox, F12→Network.'
+	1>&2 echo ""
+	exit 2
 fi
+
+if test -z "$SERVER_URL"; then
+	1>&2 echo "No server specified!"
+	1>&2 echo "Make sure to provide a server base URL (like https://fedi.server) as the last argument."
+	1>&2 echo ""
+	1>&2 usage
+	exit 3
+fi
+
 
 IFS="
 "
 while read line; do
 	post_sfeed_line "$SERVER_URL" "$FEDI_AUTH" "$line"
 done
-
