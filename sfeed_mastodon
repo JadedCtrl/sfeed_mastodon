@@ -1,0 +1,96 @@
+#!/bin/sh
+#―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+# Name: sfeed_mastodon
+# Desc: Post feed data from sfeed to the fediverse.
+# Reqs: curl, jq
+# Date: 2023-11-16
+# Lisc: GPLv3
+# Auth: @jadedctrl@jam.xwx.moe
+#―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+# Takes a post’s contents and create the corresponding client-API JSON.
+post_json() {
+	local message_text="$1"
+	printf '{ "content_type": "text/html", "visibility": "unlisted",'
+	printf '"status": "%s" }\n' "$message_text"
+}
+
+
+# Post a status with HTML content to the given Mastodon-compatible server.
+post_status() {
+	local server="$1"
+	local auth_token="$2"
+	local message_text="$3"
+
+	curl --request POST \
+		 --header "Authorization: Bearer $auth_token" \
+		 --header "Content-Type: application/json" \
+		 --data "$(post_json "$message_text" | tr -d '\n')" \
+		 "${server}/api/v1/statuses"
+}
+
+
+usage() {
+	echo "usage: $(basename "$0") server_url" 1>&2
+	echo "" 1>&2
+	echo "Your authorization key must be borrowed from your web-browser and" 1>&2
+	echo 'placed in the $FEDI_AUTH environment variable.' 1>&2
+	exit 2
+}
+
+
+url_deescape() {
+	sed 's@+@ @g;s@%@\\x@g' \
+		| xargs -0 printf "%b"
+}
+
+
+sfeed_post_text() {
+	local sfeed_line="$1"
+	local unix_date="$(echo "$line" | awk --field-separator '\t' '{print $1}')"
+	local title="$(echo "$line" | awk --field-separator '\t' '{print $2}')"
+	local url="$(echo "$line" | awk --field-separator '\t' '{print $3}' | url_deescape)"
+	local desc="$(echo "$line" | awk --field-separator '\t' '{print $4}' | tr -d '\n')"
+	local desc_snip="$(echo "$desc" | head -c250)[…]"
+
+	printf "$TEMPLATE" \
+		 | tr -d '|' \
+		 | sed "s|{{title}}|$title|g" \
+		 | sed "s|{{unix_date}}|$unix_date|g" \
+		 | sed "s|{{url}}|$url|g" \
+		 | sed "s|{{desc}}|$desc|g" \
+		 | sed "s|{{desc_short}}|$desc_snip|g"
+}
+
+
+post_sfeed_line() {
+	local server="$1"
+	local auth="$2"
+	local line="$3"
+	local message_text="$(sfeed_post_text "$line")"
+	post_status "$server" "$auth" "$message_text"
+}
+
+
+if test -z "$FEDI_AUTH"; then
+	echo 'You need to set the environment variable $FEDI_AUTH!' 1>&2
+	echo 'You can find your auth key by examining the "Authentication: Bearer" header' 1>&2
+	echo "used in requests by your server's web-client." 1>&2
+    echo 'In Firefox, F12→Network.' 1>&2
+	echo "" 1>&2
+	usage
+fi
+
+TEMPLATE='<b>{{title}}</b><br>{{url}}<br><br><blockquote>{{desc_short}}</blockquote>'
+
+SERVER_URL="$1"
+if test -z "$SERVER_URL" -o "$1" = "-h" -o "$1" = "--help"; then
+	usage
+fi
+
+IFS="
+"
+while read line; do
+	post_sfeed_line "$SERVER_URL" "$FEDI_AUTH" "$line"
+done
+
