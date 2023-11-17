@@ -69,16 +69,18 @@ sfeed_post_text() {
 	local unix_date="$(echo "$line" | awk --field-separator '\t' '{print $1}')"
 	local title="$(echo "$line" | awk --field-separator '\t' '{print $2}')"
 	local url="$(echo "$line" | awk --field-separator '\t' '{print $3}' | url_deescape)"
-	local desc="$(echo "$line" | awk --field-separator '\t' '{print $4}' | tr -d '\n')"
+	local desc="$(echo "$line" | awk --field-separator '\t' '{print $4}')"
 	local desc_snip="$(echo "$desc" | head -c250)[…]"
 
 	printf "$TEMPLATE" \
-		 | tr -d '|' \
-		 | sed "s|{{title}}|$title|g" \
-		 | sed "s|{{unix_date}}|$unix_date|g" \
-		 | sed "s|{{url}}|$url|g" \
-		 | sed "s|{{desc}}|$desc|g" \
-		 | sed "s|{{desc_short}}|$desc_snip|g"
+		| tr -d '|' \
+		| sed "s|{{title}}|$title|g" \
+		| sed "s|{{unix_date}}|$unix_date|g" \
+		| sed "s|{{url}}|$url|g" \
+		| sed "s|{{desc}}|$desc|g" \
+		| sed "s|{{desc_short}}|$desc_snip|g" \
+		| sed 's%\\n%%' \
+		| tr -d '	\n'
 }
 
 
@@ -132,6 +134,6 @@ fi
 
 IFS="
 "
-while read line; do
+while read -r line; do
 	post_sfeed_line "$SERVER_URL" "$FEDI_AUTH" "$line"
 done
