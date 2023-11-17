@@ -1,0 +1,60 @@
+# This is an sfeedrc(5) configuration file for sfeed_update(1).
+
+# The key difference is that it truncates your feed files at every update,
+# keeping only new posts. This saves you the work of filtering out old posts.
+
+
+# You probably want to EDIT this.
+sfeedpath="$HOME/.config/sfeed_mastodon/"
+
+
+# You probably want to EDIT this.
+# This contains a list of all your feeds, in the format:
+#     feed NAME URL DOMAIN ENCODING
+feeds() {
+	feed "Planet GNU" "https://planet.gnu.org/rss20.xml"     "https://planet.gnu.org"  "UTF-8"
+	feed "Tiriftjo"   "https://tirifto.xwx.moe/en/news.atom" "https://tirifto.xwx.moe" "UTF-8"
+}
+
+
+# This overrides sfeed_update’s default merge() function.
+# This makes it so that only new and unseen posts are put in the feed file.
+# This is done by storing the date of the latest post in an extended attribute,
+# for comparison during the next update..
+merge() {
+	local oldfile="$2"
+	local newfile="$3"
+
+	local previous_max_date="$(attr -q -g sfeed_latest "$oldfile" 2> /dev/null)"
+	if test -z "$previous_max_date"; then
+		previous_max_date=0
+	fi
+
+	# Update the date of the last-processed post.
+	local latest_date="$(latest_date "$newfile")"
+	attr -qs sfeed_latest -V "$latest_date" "$oldfile" 2> /dev/null
+
+	# Output only new and unprocessed posts.
+	after_date "$newfile" "$previous_max_date"
+}
+
+
+# Given an sfeed file, this returns the date of the latest post (in seconds
+# since the UNIX epoch).
+latest_date() {
+	local file="$1"
+	awk -F '\t' \
+		'$1 > latest { latest = $1 } END { print latest }' \
+		"$file"
+}
+
+
+# This outputs only lines of an sfeed file with a date after the given min_date
+# (in seconds since UNIX epoch).
+after_date() {
+	local file="$1"
+	local min_date="$2"
+	awk -F '\t' -v min_date="$min_date" \
+		'$1 > min_date { print $0 }' \
+		"$file"
+}

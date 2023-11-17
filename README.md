@@ -20,20 +20,15 @@ You’ve done it!
 
 ## Configuration
 ### sfeed
-We need to create a config file and feed directory for sfeed — they can be anywhere, your choice.
+We need to create a config file and feed directory for sfeed_update.
+You can use the sfeedrc.example file in this repo as a base for your own config file.
 ```
 $ mkdir ~/.config/sfeed/
-$ cat > ~/.config/sfeed/config <<EOF
-sfeedpath="$HOME/.config/sfeed/"
-
-feeds() {
-	feed "Planet GNU" "https://planet.gnu.org/rss20.xml" "https://planet.gnu.org" "UTF-8"
-	feed "Tiriftjo" "https://tirifto.xwx.moe/en/news.atom" "https://tirifto.xwx.moe" "UTF-8"
-}
-EOF
+$ cp sfeedrc.example ~/.config/sfeedrc
 ```
 
-You can read up more on sfeed’s configuration in its documentation¸ sfeedrc(5).
+You need to edit the example sfeedrc to add in your own Atom/RSS feeds, or to change the feed path.
+You can read up more on sfeed’s configuration in its man-page¸ sfeedrc(5).
 
 
 ### Mastodon
@@ -55,12 +50,14 @@ Whenever you use sfeed_mastodon, make sure that this token is stored in the envi
 ## Usage
 ```
 $ FEDI_AUTH="yourAuthorizationTokenHere"
-$ sfeed_update ~/.config/sfeed/config | sfeed_mastodon https://yourServer.here
+$ sfeed_update ~/.config/sfeedrc
+$ cat ~/.config/sfeed/* | sfeed_mastodon https://yourServer.here
 ```
 
-It’s that simple. It’s safe to run this command several times in a row  — feed entries that have
-already been posted won’t be reposted. You can even add this to your crontab to mirror an Atom/RSS
-feed automatically.
+It’s that simple. It’s safe to run these commands several times in a row  — feed entries that have
+already been posted won’t be reposted, if you use our example sfeedrc.
+
+To automatically mirror an Atom/RSS feed, you can put these commands into a script and put it in your crontab.
 
 
 ### Templates
