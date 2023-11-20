@@ -1,6 +1,8 @@
 # sfeed_mastodon
 
-Mirror Atom/RSS feeds to Mastodon (& friends) simply and UNIX-ly.
+Mastodon-based front-end for the sfeed feed-reader. Mirror Atom/RSS feeds to Mastodon (& friends) simply and UNIX-ly.
+
+![A screenshot of a post to a Pleroma server. It is a post made by sfeed_mastodon, and contains an article title (“Kajtoj ne nur gajigas la ĉielon”), a URL (https://uea.facila.org/artikoloj/legaĵoj/kajtoj-ne-nur-gajigas-la-ĉielon-r394/), and a quoted excerpt from the URL (“Kajtoj estas ŝat-okupo kaj sporto en okcidentaj landoj, kaj ili estas eĉ pli gravaj en Azio. Tie ili estas tradiciaj, tre popularaj, kaj povas esti tre belaj artaĵoj. Cetere ili delonge utilas al sporto, veter-scienco, fotado kaj militad[…]”).](res/screenshot.png)
 
 sfeed_mastodon takes output from the lovely feed-aggregator [sfeed](https://codemadness.org/sfeed-simple-feed-parser.html) and posts it to the fediverse.
 
