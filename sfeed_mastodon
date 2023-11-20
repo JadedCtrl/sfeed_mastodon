@@ -2,7 +2,7 @@
 #―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 # Name: sfeed_mastodon
 # Desc: Post feed data from sfeed to the fediverse.
-# Reqs: curl, jq
+# Reqs: curl, xargs
 # Date: 2023-11-16
 # Lisc: GPLv3
 # Auth: @jadedctrl@jam.xwx.moe
