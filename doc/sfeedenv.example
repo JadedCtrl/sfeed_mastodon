@@ -1,0 +1,2 @@
+export FEDI_AUTH=your_fedi_auth_key_here
+export FEDI_SERVER=https://your_server_here.co.uk
