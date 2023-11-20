@@ -14,8 +14,9 @@ usage() {
 	echo "Posts sfeed(1) feed data from stdin to Mastodon-compatible servers."
 	echo ""
 	echo "  -h             print this message and exit"
-	echo "  -a             the authorization token for your account; see below"
-	echo "  -t             template for post contents; see below"
+	echo "  -a             the authorization token for your account"
+	echo "  -s             the scope for posts, one of: public/unlisted/private/direct"
+	echo "  -t             template for post contents"
 	echo ""
 	echo "To find your authorization token, you can snoop through request headers in"
 	echo "your web-browser. In Firefox, this can be done through:"
@@ -43,7 +44,7 @@ url_deescape() {
 # Takes a post’s contents and create the corresponding client-API JSON.
 post_json() {
 	local message_text="$1"
-	printf '{ "content_type": "text/html", "visibility": "unlisted",'
+	printf '{ "content_type": "text/html", "visibility": "%s",' "$FEDI_SCOPE"
 	printf '"status": "%s" }\n' "$message_text"
 }
 
@@ -102,6 +103,9 @@ while getopts 'ha:t:' arg; do
 			usage
 			exit 0
 			;;
+		s)
+			FEDI_SCOPE="$OPTARG"
+			;;
 		a)
 			FEDI_AUTH="$OPTARG"
 			;;
@@ -130,6 +134,11 @@ if test -z "$SERVER_URL"; then
 	1>&2 echo ""
 	1>&2 usage
 	exit 3
+fi
+
+
+if test -z "$FEDI_SCOPE"; then
+	FEDI_SCOPE="public"
 fi
 
 
