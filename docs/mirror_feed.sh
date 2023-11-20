@@ -51,5 +51,5 @@ if test -z "$FEDI_AUTH" -o -z "$FEDI_SERVER"; then
 fi
 
 
-sfeed_update "$MIRROR_DIR/.sfeedrc"
-cat "$MIRROR_DIR/sfeed/* | sfeed_mastodon "$FEDI_SERVER"
+sfeed_update "$MIRROR_DIR"/sfeedrc
+cat "$MIRROR_DIR"/sfeed/* | sfeed_mastodon "$FEDI_SERVER"
