@@ -71,7 +71,21 @@ sfeed_post_text() {
 	local title="$(echo "$line" | awk --field-separator '\t' '{print $2}')"
 	local url="$(echo "$line" | awk --field-separator '\t' '{print $3}' | url_deescape)"
 	local desc="$(echo "$line" | awk --field-separator '\t' '{print $4}')"
-	local desc_snip="$(echo "$desc" | head -c250)[…]"
+	local desc_short="$(echo "$desc" | head -c250)"
+
+	# Show that the description was truncated.
+	if test "$(echo "$desc_short" | wc -c)" -gt 250; then
+		desc_short="$desc_short […]"
+	fi
+
+	if test -z "$title"; then
+		title="$url"
+	fi
+
+	# If there is nothing to post, then don’t stdout anything.
+	if test -z "$url"; then
+		return
+	fi
 
 	printf "$TEMPLATE" \
 		| tr -d '|' \
@@ -79,7 +93,7 @@ sfeed_post_text() {
 		| sed "s|{{unix_date}}|$unix_date|g" \
 		| sed "s|{{url}}|$url|g" \
 		| sed "s|{{desc}}|$desc|g" \
-		| sed "s|{{desc_short}}|$desc_snip|g" \
+		| sed "s|{{desc_short}}|$desc_short|g" \
 		| sed 's|\\n||g' \
 		| sed 's|"|\\"|g' \
 		| tr -d '	\n'
@@ -92,7 +106,10 @@ post_sfeed_line() {
 	local auth="$2"
 	local line="$3"
 	local message_text="$(sfeed_post_text "$line")"
-	post_status "$server" "$auth" "$message_text"
+
+	if test -n "$line" -a -n "$message_text"; then
+		post_status "$server" "$auth" "$message_text"
+	fi
 }
 
 
