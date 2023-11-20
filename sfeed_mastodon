@@ -79,7 +79,8 @@ sfeed_post_text() {
 		| sed "s|{{url}}|$url|g" \
 		| sed "s|{{desc}}|$desc|g" \
 		| sed "s|{{desc_short}}|$desc_snip|g" \
-		| sed 's%\\n%%' \
+		| sed 's|\\n||g' \
+		| sed 's|"|\\"|g' \
 		| tr -d '	\n'
 }
 
