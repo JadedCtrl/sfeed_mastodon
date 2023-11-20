@@ -54,10 +54,10 @@ You’ve done it!
 ### sfeed
 If you want to regularly update an RSS/Atom feed and post only new entries, we need to do some
 configuration for `sfeed_update`. For this, we’ve gotta create a config file and feed directory.
-You should use the `sfeedrc.example file` in this repo as a base for your own config file.
+You should use the `docs/sfeedrc.example file` in this repo as a base for your own config file.
 ```
 $ mkdir ~/.config/sfeed/
-$ cp sfeedrc.example ~/.config/sfeedrc
+$ cp docs/sfeedrc.example ~/.config/sfeedrc
 ```
 
 You need to edit the example sfeedrc to add in your own Atom/RSS feeds, or to change the feed path.
@@ -85,7 +85,7 @@ Whenever you use sfeed_mastodon, make sure that this token is stored in the envi
 
 ### mirror_feed
 To automatically mirror an Atom/RSS feed, you can make a script that runs `sfeed_update` &
-`sfeed_mastodon`, and then put it in your crontab. `doc/mirror_feed.sh` is a script which does exactly this.
+`sfeed_mastodon`, and then put it in your crontab. `docs/mirror_feed.sh` is a script which does exactly this.
 
 To use `mirror_feed.sh` with the `~/.config/sfeedrc` from our [prior configuration](#sfeed):
 ```
@@ -97,7 +97,7 @@ exports two variables: `$FEDI_SERVER` and `$FEDI_AUTH`. It will be sourced by `m
 though you can optionally set these variables in the environment instead.
 
 Barring that, `mirror_feed.sh` expects a directory containing `sfeedrc` and a subdirectory `sfeed/`
-for posts — just like the example configuration in `~/.config` [discussed earlier](#sfeed).
+for posts — just like the configuration in `~/.config` [discussed earlier](#sfeed).
 
 
 ### Formatting
