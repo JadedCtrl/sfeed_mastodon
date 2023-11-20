@@ -8,6 +8,20 @@ sfeed_mastodon takes output from the lovely feed-aggregator [sfeed](https://code
 
 
 
+## Usage
+```
+$ FEDI_AUTH="yourAuthorizationTokenHere"
+$ sfeed_update ~/.config/sfeedrc
+$ cat ~/.config/sfeed/* | sfeed_mastodon https://yourServer.here
+```
+
+It’s that simple. It’s safe to run these commands several times in a row  — feed entries that have
+already been posted won’t be reposted, if you use our example sfeedrc.
+
+To automatically mirror an Atom/RSS feed, you can put these commands into a script and put it in your crontab.
+
+
+
 ## Installation
 First, make sure to install [sfeed](https://codemadness.org/sfeed-simple-feed-parser.html).
 If Guix is your package manager:
@@ -48,21 +62,7 @@ Whenever you use sfeed_mastodon, make sure that this token is stored in the envi
 `$FEDI_AUTH`, or pass it with the `-a` parameter.
 
 
-
-## Usage
-```
-$ FEDI_AUTH="yourAuthorizationTokenHere"
-$ sfeed_update ~/.config/sfeedrc
-$ cat ~/.config/sfeed/* | sfeed_mastodon https://yourServer.here
-```
-
-It’s that simple. It’s safe to run these commands several times in a row  — feed entries that have
-already been posted won’t be reposted, if you use our example sfeedrc.
-
-To automatically mirror an Atom/RSS feed, you can put these commands into a script and put it in your crontab.
-
-
-### Templates
+### Formatting
 You might want to know about the template parameter (`-t`) — this lets you tweak the output for
 sfeed_mastodon as you wish. With this, you can add specific hash-tags to your posts, for example.
 Its argument should be HTML with some variables within {{double-cramps}} for post data. 
