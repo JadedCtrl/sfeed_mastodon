@@ -125,5 +125,5 @@ Here are the variables you can use:
 
 ## Misc.
 Author: [@jadedctrl:jam.xwx.moe](https://jam.xwx.moe/users/jadedctrl)  
-Source: https://notabug.org/jadedctrl/sfeed_mastodon  
+Source: https://hak.xwx.moe/jadedctrl/sfeed_mastodon  
 License: GPLv3
